@@ -2,7 +2,7 @@
 Demo of isometric level implemented in pygame
 
 ### requirements
-python3 <= 3.7.9
+python3 <= 3.7.9 \
 pygame
 
 ### run
