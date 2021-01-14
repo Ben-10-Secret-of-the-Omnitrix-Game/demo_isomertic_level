@@ -72,6 +72,10 @@ def cartesian_to_isometric(x, y):
 
 
 def game_loop_handler():
+    event = pygame.event.poll()
+    if event.type == pygame.QUIT:
+        pygame.quit()
+        sys.exit()
     # Different types of rendering
     # render_basic_tilemap()
     render_isometric_tilemap()
@@ -97,9 +101,5 @@ if __name__ == "__main__":
             BROWN, 3, 1, wall), Tile(BROWN, 3, 2, wall)],
     ]
     while True:
-        event = pygame.event.poll()
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
+    
         game_loop_handler()
