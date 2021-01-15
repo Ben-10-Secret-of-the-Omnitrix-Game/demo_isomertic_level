@@ -1,4 +1,4 @@
-# demo_isomertic_level
+# demo_isometric_level
 Demo of isometric level implemented in pygame
 
 ### requirements
