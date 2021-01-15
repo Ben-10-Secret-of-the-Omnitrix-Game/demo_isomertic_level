@@ -2,18 +2,18 @@ import pygame
 import sys
 import os
 
-from .tile import Tile
+from tile import Tile
+from player import Player
 
-MAPWIDTH = 4
-MAPHEIGH = 4
+MAPWIDTH = 5
+MAPHEIGHT = 5
 TILESIZE = 50
 
 wall_graphic_height = 98
 floor_graphic_wdth = 103
 floor_graphic_height = 53
 wall_height = wall_graphic_height - floor_graphic_height
-border_offset = 200
-
+border_offset = 150
 
 BLACK = (0, 0, 0)
 BROWN = (153, 76, 0)
@@ -21,12 +21,17 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 
-def load_resource_image(name):
-    path = os.path.join("demo_isometric_level/resources/images", f"{name}.png")
+def load_resource_image(name, colorkey=None):
+    path = os.path.join("resources\\images", f"{name}.png")
     print(path)
     image = pygame.image.load(path)
-    # TODO remove convert() and collide all pngs' into single one for performace purposes
-    image.convert()
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
     return image
 
 
@@ -35,12 +40,33 @@ wall = object
 floor = object
 
 tilemap = []
+players = []
+
+
+def render_players():
+    global game_screen, players
+    for player in players:
+        x, y = player.x, player.y
+        game_screen.blit(player.texture, players_place(player, get_cell_center(x, y)))
+
+def get_cell_center(x, y):
+    cart_x = (x + 1) * TILESIZE + border_offset
+    cart_y = (y - 2) * TILESIZE + border_offset - wall_height
+    cntr_x = cart_x + TILESIZE // 2
+    cntr_y = cart_y + TILESIZE // 2
+    return cartesian_to_isometric(cart_x, cntr_y)
+
+
+def players_place(player, pos):
+    x = pos[0]
+    y = pos[1]
+    return x, y - player.height + 20
 
 
 def render_basic_tilemap():
     global game_screen
     for y in range(MAPWIDTH):
-        for x in range(MAPHEIGH):
+        for x in range(MAPHEIGHT):
             tile = tilemap[x][y]
             tile: Tile
             pygame.draw.rect(game_screen, tile.color,
@@ -50,19 +76,17 @@ def render_basic_tilemap():
 def render_isometric_tilemap():
     global game_screen, wall
     for y in range(MAPWIDTH):
-        for x in range(MAPHEIGH):
+        for x in range(MAPHEIGHT):
             tile = tilemap[x][y]
             tile: Tile
             render_isometric_tile(tile, x, y)
-
-    pygame.display.flip()
 
 
 def render_isometric_tile(tile, x, y):
     cart_x = x * TILESIZE
     cart_y = y * TILESIZE
     iso_x, iso_y = cartesian_to_isometric(cart_x, cart_y)
-    game_screen.blit(tile.texture, (iso_x + border_offset, iso_y + border_offset - wall_height ))
+    game_screen.blit(tile.texture, (iso_x + border_offset, iso_y + border_offset - wall_height))
 
 
 def cartesian_to_isometric(x, y):
@@ -72,14 +96,27 @@ def cartesian_to_isometric(x, y):
 
 
 def game_loop_handler():
-    event = pygame.event.poll()
-    if event.type == pygame.QUIT:
-        pygame.quit()
-        sys.exit()
+    game_screen.fill((0, 0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.image.save(game_screen, 'hi_man.png')
+            pygame.quit()
+            sys.exit()
+        s = list(pygame.key.get_pressed())[79: 83]
+        if 1 in s:
+            if s[0]:
+                ben.x += 1
+            elif s[1]:
+                ben.x -= 1
+            elif s[2]:
+                ben.y += 1
+            else:
+                ben.y -= 1
     # Different types of rendering
     # render_basic_tilemap()
     render_isometric_tilemap()
-    pygame.display.update()
+    render_players()
+    pygame.display.flip()
 
 
 if __name__ == "__main__":
@@ -89,13 +126,22 @@ if __name__ == "__main__":
 
     wall = load_resource_image("block")
     floor = load_resource_image("floor")
+    ben_image = load_resource_image("ben10_1")
+    ben = Player('Ben', ben_image, 4, 2)
+    players.append(ben)
 
-    tilemap = [
-        [Tile(BROWN, 0, 0, wall), Tile(BROWN, 0, 1, wall), Tile(BROWN, 0, 2, wall), Tile(BROWN, 0, 3, wall)],
-        [Tile(BROWN, 1, 0, wall), Tile(GREEN, 1, 1, floor), Tile(GREEN, 1, 2, floor), Tile(BROWN, 1, 3, wall)],
-        [Tile(BROWN, 2, 0, wall), Tile(GREEN, 2, 1, floor), Tile(GREEN, 2, 2, floor), Tile(BROWN, 2, 3, wall)],
-        [Tile(BROWN, 3, 0, wall), Tile(BROWN, 3, 1, wall), Tile(BROWN, 3, 2, wall), Tile(BROWN, 3, 3, wall)],
-    ]
+    clock = pygame.time.Clock()
+    fps = 1
+
+    for row in range(MAPHEIGHT):
+        stock = []
+        for col in range(MAPWIDTH):
+            if row == 0 or row == MAPHEIGHT - 1:
+                stock.append(Tile(BROWN, row, col, wall))
+            elif col == 0 or col == MAPWIDTH - 1:
+                stock.append(Tile(BROWN, row, col, wall))
+            else:
+                stock.append(Tile(GREEN, row, col, floor))
+        tilemap.append(stock)
     while True:
-    
         game_loop_handler()
