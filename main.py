@@ -23,7 +23,6 @@ BLUE = (0, 0, 255)
 
 def load_resource_image(name, colorkey=None):
     path = os.path.join("resources\\images", f"{name}.png")
-    print(path)
     image = pygame.image.load(path)
     if colorkey is not None:
         image = image.convert()
@@ -49,9 +48,10 @@ def render_players():
         x, y = player.x, player.y
         game_screen.blit(player.texture, players_place(player, get_cell_center(x, y)))
 
+
 def get_cell_center(x, y):
     cart_x = (x + 1) * TILESIZE + border_offset
-    cart_y = (y - 2) * TILESIZE + border_offset - wall_height
+    cart_y = (y - 1) * TILESIZE + border_offset - wall_height
     cntr_x = cart_x + TILESIZE // 2
     cntr_y = cart_y + TILESIZE // 2
     return cartesian_to_isometric(cart_x, cntr_y)
@@ -104,14 +104,19 @@ def game_loop_handler():
             sys.exit()
         s = list(pygame.key.get_pressed())[79: 83]
         if 1 in s:
-            if s[0]:
+            if s[2]:
                 ben.x += 1
-            elif s[1]:
+                ben.change_rotate(0)
+            elif s[3]:
                 ben.x -= 1
-            elif s[2]:
+                ben.change_rotate(2)
+            elif s[1]:
                 ben.y += 1
+                ben.change_rotate(3)
             else:
                 ben.y -= 1
+                ben.change_rotate(1)
+
     # Different types of rendering
     # render_basic_tilemap()
     render_isometric_tilemap()
@@ -126,8 +131,9 @@ if __name__ == "__main__":
 
     wall = load_resource_image("block")
     floor = load_resource_image("floor")
-    ben_image = load_resource_image("ben10_1")
-    ben = Player('Ben', ben_image, 4, 2)
+    ben_images_png = ["ben10_1", "ben10_2", "ben10_3", "ben10_4"]
+    ben_images = [load_resource_image(i) for i in ben_images_png]
+    ben = Player('Ben', ben_images, 4, 2)
     players.append(ben)
 
     clock = pygame.time.Clock()

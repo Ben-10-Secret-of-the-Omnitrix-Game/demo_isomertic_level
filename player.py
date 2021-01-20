@@ -6,9 +6,16 @@ class Player:
         """
         x, y - cell
         """
-        assert isinstance(image, pygame.Surface), image
-        self.texture = image
+        self.rotate = 0
+        self.image = image
+        if image:
+            self.texture = image[self.rotate]
         self.name = name
         self.x = x
         self.y = y
-        self.width, self.height = image.get_size()
+        self.width, self.height = self.texture.get_size()
+
+    def change_rotate(self, rotate):
+        self.rotate = rotate
+        if self.image:
+            self.texture = self.image[self.rotate]
